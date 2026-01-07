@@ -61,3 +61,26 @@ docker-compose logs app
 
 # コンテナ内で bash を操作する（コンテナ起動中のみ）
 docker-compose exec app /bin/bash
+```
+
+## CLIでデータベース・テーブル作成
+
+```bash
+# rootユーザでログイン
+docker compose exec db mysql -u root -p
+
+# データベースを作成
+CREATE DATABASE log_analyzer_db;
+
+# デフォルトで使用するデータベースの設定
+SET log_analyzer_db;
+
+# テーブル作成
+CREATE TABLE logs (
+  id INTEGER PRIMARY KEY AUTO_INCREMENT,
+  domain_code VARCHAR(10) NOT NULL,
+  page_title VARCHAR(255) NOT NULL,
+  count_views INTEGER NOT NULL,
+  total_response_size INTEGER NOT NULL
+);
+```
