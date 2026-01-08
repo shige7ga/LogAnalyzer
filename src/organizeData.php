@@ -39,6 +39,3 @@ $insertSentence = "INSERT INTO logs (
 ) VALUES " . substr($insertValues, 0, -3) . ';';
 
 echo $insertSentence . PHP_EOL;
-
-
-// var_dump($values);
