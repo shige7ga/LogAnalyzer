@@ -60,55 +60,41 @@ EOT;
 }
 
 // ファイルからデータを取得し、INSERT文を生成する関数
-function getInsertSentence(string $filePath): string
+function getInsertSentence($link, string $filePath): string
 {
-    // ファイルを開く
     $handle = fopen($filePath, 'r');
     if ($handle === false) {
         throw new RuntimeException('ファイルを開けませんでした') . PHP_EOL;
     }
-    // ファイルから1行ずつデータを取得
-    $lines = [];
+    $insertCount = 0;
     while (($line = fgets($handle)) !== false) {
-        $lines[] = $line;
-    }
-    fclose($handle);
-
-    // 取得した1行データをスペース区切りで配列に格納
-    $values = [];
-    foreach ($lines as $line) {
-        $values[] = explode(' ', $line);
-    }
-
-    // INSERT文のVALUES句を生成
-    $insertValues = '';
-    foreach ($values as $value) {
-        if ($value[0] === '""') {
+        $data = explode(' ', $line);
+        if ($data[0] === '') {
             $domainCord = '(' . "''" . ", '";
         } else {
-            $domainCord = "('" . $value[0] . "', '";
+            $domainCord = "('" . $data[0] . "', '";
         }
-        $insertValues .= $domainCord . $value[1] . "', " . $value[2] . ', ' . trim($value[3]) . '), ' . PHP_EOL;
+        $insertValues = $domainCord . $data[1] . "', " . $data[2] . ', ' . trim($data[3]) . ')';
+        $insertSentence = <<<EOT
+            INSERT INTO logs (
+                domain_code,
+                page_title,
+                count_views,
+                total_response_size
+                ) VALUES {$insertValues};
+        EOT;
+        insertData($link, $insertSentence);
+        $insertCount++;
     }
-
-    // 最後のカンマと改行を削除して、INSERT文を生成
-    $insertSentence = "INSERT INTO logs (
-    domain_code,
-    page_title,
-    count_views,
-    total_response_size
-    ) VALUES " . substr($insertValues, 0, -3) . ';';
-
-    return $insertSentence;
+    fclose($handle);
+    return strval($insertCount) . '件のデータを挿入しました' . PHP_EOL;
 }
 
 // データを挿入する関数
 function insertData($link, string $insertSentence)
 {
     $result = mysqli_query($link, $insertSentence);
-    if ($result) {
-        echo "データを挿入しました" . PHP_EOL;
-    } else {
+    if (!$result) {
         echo "データの挿入に失敗しました" . PHP_EOL;
         echo 'debugging error：' . mysqli_error($link) . PHP_EOL;
         exit;
