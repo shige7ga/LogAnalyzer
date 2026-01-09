@@ -84,3 +84,17 @@ function insertData($pdo)
         echo 'エラー発生：'. $error->getMessage() . PHP_EOL;
     }
 }
+
+// Indexの設定
+function createIndex($pdo) {
+    $sqls[] = "CREATE INDEX idx_logs_count_views_desc ON logs(count_views DESC);";
+    $sqls[] = "CREATE INDEX idx_logs_domain_views ON logs(domain_code, count_views);";
+    try {
+        foreach ($sqls as $sql) {
+            $pdo->exec($sql);
+        }
+        echo "インデックスを設定しました" . PHP_EOL;
+    } catch (PDOException $error) {
+            echo 'エラー発生：' . $error->getMessage() . PHP_EOL;
+    }
+}
