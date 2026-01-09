@@ -14,7 +14,7 @@ function getMostViewedPage($pdo, int $count)
     pdoQuery($pdo, $sql);
 }
 
-function getMostViewPerDmainCode($pdo, $domainCodes)
+function getTotalViewsPerDmain($pdo, $domainCodes)
 {
     $valueDomainCodes = '';
     foreach ($domainCodes as $domainCode) {
@@ -25,11 +25,11 @@ function getMostViewPerDmainCode($pdo, $domainCodes)
     $sql = <<<EOT
         SELECT
             domain_code,
-            MAX(count_views)
+            SUM(count_views) AS total_views
         FROM logs
         WHERE domain_code IN ({$valueDomainCodes})
         GROUP BY domain_code
-        ORDER BY FIELD(domain_code, {$valueDomainCodes});
+        ORDER BY total_views DESC;
     EOT;
     pdoQuery($pdo, $sql);
 }

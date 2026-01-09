@@ -37,8 +37,10 @@ function connectPdo()
 function dropTable($pdo)
 {
     try {
-        $sql = "DROP TABLE IF EXISTS logs";
-        $pdo->exec($sql);
+        $deleteLogs = "DROP TABLE IF EXISTS logs";
+        $deleteTotalViews = "DROP TABLE IF EXISTS total_views_domain";
+        $pdo->exec($deleteLogs);
+        $pdo->exec($deleteTotalViews);
         echo "テーブルを削除しました" . PHP_EOL;
     } catch (PDOException $error) {
         echo 'エラー発生：'. $error->getMessage() . PHP_EOL;
@@ -48,7 +50,7 @@ function dropTable($pdo)
 // テーブルを作成する関数
 function createTable($pdo)
 {
-    $sql = <<<EOT
+    $createLogsTable = <<<EOT
         CREATE TABLE logs (
             id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
             domain_code VARCHAR(255) NOT NULL,
@@ -58,9 +60,18 @@ function createTable($pdo)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     EOT;
 
+    $createTotalVeiwsTable = <<<EOT
+        CREATE TABLE total_views_domain (
+            domain_code VARCHAR(100) NOT NULL PRIMARY KEY,
+            total_views BIGINT NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    EOT;
+
     try {
-        $pdo->exec($sql);
-        echo "テーブルを作成しました" . PHP_EOL;
+        $pdo->exec($createLogsTable);
+        echo "logsテーブルを作成しました" . PHP_EOL;
+        $pdo->exec($createTotalVeiwsTable);
+        echo "total_views_Domainテーブルを作成しました" . PHP_EOL;
     } catch (PDOException $error) {
         echo 'エラー発生：'. $error->getMessage() . PHP_EOL;
     }
@@ -69,7 +80,7 @@ function createTable($pdo)
 // データを挿入する関数
 function insertData($pdo)
 {
-    $sql = <<<EOT
+    $insertToLogs = <<<EOT
         LOAD DATA INFILE '/var/lib/mysql-files/rawData.txt'
         INTO TABLE logs
         FIELDS TERMINATED BY ' '
@@ -77,9 +88,20 @@ function insertData($pdo)
         (domain_code, page_title, count_views, total_response_size)
     EOT;
 
+    $insertToTotalViews = <<<EOT
+        INSERT INTO total_views_domain (domain_code, total_views)
+        SELECT domain_code, SUM(count_views)
+        FROM logs
+        GROUP BY domain_code
+        ON DUPLICATE KEY UPDATE
+            total_views = VALUES(total_views);
+    EOT;
+
     try {
-        $insertCount = $pdo->exec($sql);
-        echo "{$insertCount}件のデータを挿入しました" . PHP_EOL;
+        $insertToLogsCount = $pdo->exec($insertToLogs);
+        echo "logsテーブルへ{$insertToLogsCount}件のデータを挿入しました" . PHP_EOL;
+        $insertToTotalViewsCount = $pdo->exec($insertToTotalViews);
+        echo "total_views_Domainテーブルへ{$insertToTotalViewsCount}件のデータを挿入しました" . PHP_EOL;
     } catch (PDOException $error) {
         echo 'エラー発生：'. $error->getMessage() . PHP_EOL;
     }
@@ -97,4 +119,15 @@ function createIndex($pdo) {
     } catch (PDOException $error) {
             echo 'エラー発生：' . $error->getMessage() . PHP_EOL;
     }
+}
+
+// テーブルの初期化
+function initializeTable() {
+    $pdo = connectPdo();
+    dropTable($pdo);
+    createTable($pdo);
+    createIndex($pdo);
+    echo '初回のデータベース/テーブル設定をしています... 少々お待ちください ٩(¨ )ว=͟͟͞͞' . PHP_EOL;
+    insertData($pdo);
+    echo '設定が完了しました' . PHP_EOL;
 }
