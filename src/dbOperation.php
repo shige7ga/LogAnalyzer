@@ -84,26 +84,3 @@ function insertData($pdo)
         echo 'エラー発生：'. $error->getMessage() . PHP_EOL;
     }
 }
-
-function getMostViewedPage($pdo, int $count)
-{
-    $sql = <<<EOT
-        SELECT
-            domain_code,
-            page_title,
-            count_views
-        FROM logs
-        ORDER by count_views DESC
-        LIMIT {$count};
-    EOT;
-
-    try {
-        $stmt = $pdo->query($sql);
-    } catch (PDOException $error) {
-        echo 'エラー発生：' .$error->getMessage() . PHP_EOL;
-    }
-
-    while ($row = $stmt->fetch()) {
-        echo "\"{$row['domain_code']}\", \"{$row['page_title']}\", {$row['count_views']}" . PHP_EOL;
-    }
-}

@@ -2,6 +2,6 @@
 require_once 'dbOperation.php';
 require_once 'selectTable.php';
 
-$count = (int)$argv[1];
+$domainCodes = array_slice($argv, 1);
 $pdo = connectPdo();
-getMostViewedPage($pdo, $count);
+getMostViewPerDmainCode($pdo, $domainCodes);
