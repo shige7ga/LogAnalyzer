@@ -25,11 +25,11 @@ function getMostViewPerDmainCode($pdo, $domainCodes)
     $sql = <<<EOT
         SELECT
             domain_code,
-            page_title,
-            MAX(count_views) as count_views
+            MAX(count_views)
         FROM logs
         WHERE domain_code IN ({$valueDomainCodes})
-        GROUP BY domain_code;
+        GROUP BY domain_code
+        ORDER BY FIELD(domain_code, {$valueDomainCodes});
     EOT;
     pdoQuery($pdo, $sql);
 }
