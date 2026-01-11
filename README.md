@@ -15,13 +15,9 @@ Wikipediaのlogデータを用い、CLIで動くログ解析ツール（下記�
 
 ## 機能要件
 
-1. データベース及びテーブルを作成する
+1. データベース及びテーブルを作成する(Wikipediaのlogデータを使用)
 
-2. Wikipediaのlogデータを使用
-  - WikipediaURL：https://dumps.wikimedia.org/other/pageviews/2021/2021-12/
-  - logデータのテーブル定義：https://wikitech.wikimedia.org/wiki/Analytics/Data_Lake/Traffic/Pageviews
-
-3. 下記の2種類の指示で、指定した内容をCLIに出力する
+2. 下記の2種類の指示で、指定した内容をCLIに出力する
 
 * ビュー数が多い順に、指定された記事数分のページ情報（ドメインコード、ページタイトル、ビュー数）を提示する
 （例）CLI上で「2」と指定した場合、下記を表示
@@ -54,28 +50,32 @@ docker-compose down
 
 ## 使用方法
 
-1. Dockerでの環境構築
+1. ログデータの設定
+  Wikipediaのログデータをサイトからダウンロードし、src/logsフォルダに1つ格納してください。
+  - WikipediaURL：https://dumps.wikimedia.org/other/pageviews/2021/2021-12/
+  - logデータのテーブル定義：https://wikitech.wikimedia.org/wiki/Analytics/Data_Lake/Traffic/Pageviews
+
+2. Dockerでの環境構築
 ```bash
 docker-compose build
 docker-compose up -d
 ```
 
-2. Wikiログ解析ツールのプログラムを実行
+3. Wikiログ解析ツールのプログラムを実行
 ```bash
 docker compose exec app php logAnalyzer.php
 ```
 ※ 初回はデータベース及びテーブルの初期設定を行います。
 　 その為、操作できるまで多少時間がかかります。
-※ 解析用データ(Wikipediaのログデータ)はsrc/logsに「rowData.txt」ファイルとして格納しています。
 
-3. CLI上で選択コマンドが表示される(下記から選択)
+4. CLI上で選択コマンドが表示される(下記から選択)
   * 1：最もビュー数の多いページ情報を表示する
   * 2：ドメインコードごとの合計ビュー数を表示する
   * 9：ツールを終了する
 
-4. CLI上の指示に従い、操作する
+5. CLI上の指示に従い、操作する
 
-5. 最後にDocker コンテナの停止・削除
+6. 最後にDocker コンテナの停止・削除
 ```bash
 docker-compose down
 ```

@@ -1,2 +1,3 @@
 docker/db/db-variables.env
 .env
+logs/rawData.txt
