@@ -2,16 +2,15 @@
 require_once 'dbOperation.php';
 require_once 'selectTable.php';
 
+// テーブル作成済みか確認して、未設定の場合はテーブル新規作成
 $pdo = connectPdo();
 $stmt = $pdo->query("SHOW TABLE STATUS LIKE 'logs'");
 $tableData = $stmt->fetch();
-
 if (!$tableData) {
     initializeTable();
 }
 
-echo 'Wikipediaログ解析ツールです' . PHP_EOL;
-echo '下記から操作を選択してください' . PHP_EOL;
+echo 'Wikipediaログ解析ツールです。下記から操作を選択してください。' . PHP_EOL;
 echo 'ーーーーーーーーーーーーーーー' . PHP_EOL;
 echo '1：最もビュー数の多い情報を表示する' . PHP_EOL;
 echo '2：ドメインコードごとの合計ビュー数を表示する' . PHP_EOL;

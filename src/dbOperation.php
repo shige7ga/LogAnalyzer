@@ -21,8 +21,8 @@ function connectPdo()
             $dbUsername,
             $dbPassword,
             [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::MYSQL_ATTR_LOCAL_INFILE => true,
+                // SQLエラーを例外(Exception)として投げる設定
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
             ]
         );
     } catch (PDOException $error) {
@@ -41,7 +41,6 @@ function dropTable($pdo)
         $deleteTotalViews = "DROP TABLE IF EXISTS total_views_domain";
         $pdo->exec($deleteLogs);
         $pdo->exec($deleteTotalViews);
-        echo "テーブルを削除しました" . PHP_EOL;
     } catch (PDOException $error) {
         echo 'エラー発生：'. $error->getMessage() . PHP_EOL;
     }
@@ -69,9 +68,7 @@ function createTable($pdo)
 
     try {
         $pdo->exec($createLogsTable);
-        echo "logsテーブルを作成しました" . PHP_EOL;
         $pdo->exec($createTotalVeiwsTable);
-        echo "total_views_Domainテーブルを作成しました" . PHP_EOL;
     } catch (PDOException $error) {
         echo 'エラー発生：'. $error->getMessage() . PHP_EOL;
     }
@@ -80,6 +77,7 @@ function createTable($pdo)
 // データを挿入する関数
 function insertData($pdo)
 {
+    // rawData.txtからBulk Insert
     $insertToLogs = <<<EOT
         LOAD DATA INFILE '/var/lib/mysql-files/rawData.txt'
         INTO TABLE logs
@@ -88,7 +86,7 @@ function insertData($pdo)
         (domain_code, page_title, count_views, total_response_size)
     EOT;
 
-    // 合計ビュー数を取得する際のクエリ高速化のため、Summaryのテーブルを作成
+    // 合計ビュー数を取得するクエリ高速化の為、Summaryテーブル作成
     $insertToTotalViews = <<<EOT
         INSERT INTO total_views_domain (domain_code, total_views)
         SELECT domain_code, SUM(count_views)
@@ -99,24 +97,18 @@ function insertData($pdo)
     EOT;
 
     try {
-        $insertToLogsCount = $pdo->exec($insertToLogs);
-        echo "logsテーブルへ{$insertToLogsCount}件のデータを挿入しました" . PHP_EOL;
-        $insertToTotalViewsCount = $pdo->exec($insertToTotalViews);
-        echo "total_views_Domainテーブルへ{$insertToTotalViewsCount}件のデータを挿入しました" . PHP_EOL;
+        $pdo->exec($insertToLogs);
+        $pdo->exec($insertToTotalViews);
     } catch (PDOException $error) {
         echo 'エラー発生：'. $error->getMessage() . PHP_EOL;
     }
 }
 
-// Indexの設定
+// Indexの設定(クエリ高速化のため)
 function createIndex($pdo) {
-    $sqls[] = "CREATE INDEX idx_logs_count_views_desc ON logs(count_views DESC);";
-    $sqls[] = "CREATE INDEX idx_logs_domain_views ON logs(domain_code, count_views);";
+    $sql = "CREATE INDEX idx_logs_count_views_desc ON logs(count_views DESC);";
     try {
-        foreach ($sqls as $sql) {
-            $pdo->exec($sql);
-        }
-        echo "インデックスを設定しました" . PHP_EOL;
+        $pdo->exec($sql);
     } catch (PDOException $error) {
             echo 'エラー発生：' . $error->getMessage() . PHP_EOL;
     }
@@ -128,7 +120,7 @@ function initializeTable() {
     dropTable($pdo);
     createTable($pdo);
     createIndex($pdo);
-    echo '初回のデータベース/テーブル設定をしています... 少々お待ちください ٩(¨ )ว=͟͟͞͞' . PHP_EOL;
+    echo '初回のテーブル設定をしています... 少々お待ちください ٩(¨ )ว=͟͟͞͞' . PHP_EOL;
     insertData($pdo);
-    echo '設定が完了しました' . PHP_EOL;
+    echo '初期設定が完了しました' . PHP_EOL;
 }
