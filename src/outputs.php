@@ -1,5 +1,7 @@
 <?php
 
+require_once 'validate.php';
+
 function firstOutput()
 {
     echo 'Wikipediaログ解析ツールです。下記から操作を選択してください。' . PHP_EOL;
@@ -12,24 +14,44 @@ function firstOutput()
 
 function outputMostViewedPage(): void
 {
-    echo '何件表示しますか(1以上の整数で入力してください)：';
-    $count = (int)trim(fgets(STDIN));
-    $pdo = connectPdo();
+    while (true) {
+        echo '何件表示しますか(1以上の整数で入力してください)：';
+        $count = (int)trim(fgets(STDIN));
+        $validated = validateMostViewedPage($count);
 
-    echo '<検索結果>ーーーーー' . PHP_EOL;
-    getMostViewedPage($pdo, $count);
-    echo 'ーーーーーーーーーー' . PHP_EOL;
+        if (count($validated) > 0){
+            foreach ($validated as $error) {
+                echo $error . PHP_EOL;
+            }
+        } else {
+            $pdo = connectPdo();
+            echo '<検索結果>ーーーーー' . PHP_EOL;
+            getMostViewedPage($pdo, $count);
+            echo 'ーーーーーーーーーー' . PHP_EOL;
+            break;
+        }
+    }
 }
 
 function outputTotalViewsPerDmain(): void
 {
-    echo '検索するドメインコードを入力してください(例：en, ja, de)' . PHP_EOL;
-    echo '複数検索する場合、半角スペースで区切ってください(例：en de ja)：';
-    $domainCode = trim(fgets(STDIN));
-    $domainCodes = explode(' ', $domainCode);
-    $pdo = connectPdo();
+    while (true) {
+        echo '検索するドメインコードを入力してください(例：en, ja, de)' . PHP_EOL;
+        echo '複数検索する場合、半角スペースで区切ってください(例：en de ja)：';
+        $domainCode = trim(fgets(STDIN));
+        $validated = validateTotalViewsPerDmain($domainCode);
 
-    echo '<検索結果>ーーーーー' . PHP_EOL;
-    getTotalViewsPerDmain($pdo, $domainCodes);
-    echo 'ーーーーーーーーーー' . PHP_EOL;
+        if (count($validated) > 0) {
+            foreach ($validated as $error) {
+                echo $error . PHP_EOL;
+            }
+        } else {
+            $domainCodes = explode(' ', $domainCode);
+            $pdo = connectPdo();
+            echo '<検索結果>ーーーーー' . PHP_EOL;
+            getTotalViewsPerDmain($pdo, $domainCodes);
+            echo 'ーーーーーーーーーー' . PHP_EOL;
+            break;
+        }
+    }
 }
