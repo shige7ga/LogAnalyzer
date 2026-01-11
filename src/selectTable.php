@@ -25,10 +25,9 @@ function getTotalViewsPerDmain($pdo, $domainCodes)
     $sql = <<<EOT
         SELECT
             domain_code,
-            SUM(count_views) AS total_views
-        FROM logs
+            total_views
+        FROM total_views_domain
         WHERE domain_code IN ({$valueDomainCodes})
-        GROUP BY domain_code
         ORDER BY total_views DESC;
     EOT;
     pdoQuery($pdo, $sql);

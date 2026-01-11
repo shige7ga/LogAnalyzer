@@ -88,6 +88,7 @@ function insertData($pdo)
         (domain_code, page_title, count_views, total_response_size)
     EOT;
 
+    // 合計ビュー数を取得する際のクエリ高速化のため、Summaryのテーブルを作成
     $insertToTotalViews = <<<EOT
         INSERT INTO total_views_domain (domain_code, total_views)
         SELECT domain_code, SUM(count_views)
