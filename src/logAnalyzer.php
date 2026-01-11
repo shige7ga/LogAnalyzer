@@ -3,6 +3,11 @@ require_once 'dbOperation.php';
 require_once 'selectTable.php';
 require_once 'outputs.php';
 
+if (count(getLogFile()) !== 1) {
+    echo 'logsフォルダに1つのみlogファイルを格納し、再実行してください' . PHP_EOL;
+    exit;
+}
+
 // テーブル作成済みか確認して、未設定の場合はテーブル新規作成
 $pdo = connectPdo();
 $stmt = $pdo->query("SHOW TABLE STATUS LIKE 'logs'");

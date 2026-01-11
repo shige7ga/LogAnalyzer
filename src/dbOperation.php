@@ -77,9 +77,11 @@ function createTable($pdo)
 // データを挿入する関数
 function insertData($pdo)
 {
+    $file = getLogFile()[0];
+
     // rawData.txtからBulk Insert
     $insertToLogs = <<<EOT
-        LOAD DATA INFILE '/var/lib/mysql-files/rawData.txt'
+        LOAD DATA INFILE '/var/lib/mysql-files/$file'
         INTO TABLE logs
         FIELDS TERMINATED BY ' '
         LINES TERMINATED BY '\n'
@@ -112,6 +114,21 @@ function createIndex($pdo) {
     } catch (PDOException $error) {
             echo 'エラー発生：' . $error->getMessage() . PHP_EOL;
     }
+}
+
+// logsフォルダに入ったファイルを返す
+function getLogFile()
+{
+    $dir = 'logs/';
+    $files = array_diff(scandir($dir), ['.', '..']);
+    $onlyFiles = [];
+    foreach ($files as $entry) {
+        $full_path = $dir . '/' . $entry;
+        if(is_file($full_path)) {
+            $onlyFiles[] = $entry;
+        }
+    }
+    return $onlyFiles;
 }
 
 // テーブルの初期化
