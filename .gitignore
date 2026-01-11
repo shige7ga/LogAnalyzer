@@ -1,3 +1,5 @@
 docker/db/db-variables.env
 .env
+.env.*
+src/.env
 src/logs/rawData.txt
