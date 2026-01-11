@@ -1,6 +1,6 @@
 <?php
 
-function getMostViewedPage($pdo, int $count)
+function getMostViewedPage($pdo, int $count): void
 {
     $sql = <<<EOT
         SELECT
@@ -9,12 +9,12 @@ function getMostViewedPage($pdo, int $count)
             count_views
         FROM logs
         ORDER by count_views DESC
-        LIMIT {$count};
+        LIMIT $count;
     EOT;
     pdoQuery($pdo, $sql);
 }
 
-function getTotalViewsPerDmain($pdo, $domainCodes)
+function getTotalViewsPerDmain($pdo, array $domainCodes): void
 {
     $valueDomainCodes = '';
     foreach ($domainCodes as $domainCode) {
@@ -27,13 +27,13 @@ function getTotalViewsPerDmain($pdo, $domainCodes)
             domain_code,
             total_views
         FROM total_views_domain
-        WHERE domain_code IN ({$valueDomainCodes})
+        WHERE domain_code IN ($valueDomainCodes)
         ORDER BY total_views DESC;
     EOT;
     pdoQuery($pdo, $sql);
 }
 
-function pdoQuery($pdo, $sql)
+function pdoQuery($pdo, string $sql): void
 {
     try {
         $stmt = $pdo->query($sql);
