@@ -17,20 +17,21 @@ Wikipediaのlogデータを用い、CLIで動くログ解析ツール（下記�
 
 1. データベース及びテーブルを作成する
 
-2. Wikipediaのlogデータをインポートする
-  -WikipediaURL：https://dumps.wikimedia.org/other/pageviews/2021/2021-12/
+2. Wikipediaのlogデータを使用
+  - WikipediaURL：https://dumps.wikimedia.org/other/pageviews/2021/2021-12/
+  - logデータのテーブル定義：https://wikitech.wikimedia.org/wiki/Analytics/Data_Lake/Traffic/Pageviews
 
 3. 下記の2種類の指示で、指定した内容をCLIに出力する
 
-* 最もビュー数の多い記事を、指定した記事数分だけビュー数が多い順にソートし、ドメインコードとページタイトル、ビュー数を提示する
-（例）コマンドライン上で2記事と指定した場合、下記を表示する
-”en”, “Main_Page”, 120
-”en”, ”Wikipedia:Umnyango_wamgwamanda”, 112
+* ビュー数が多い順に、指定された記事数分のページ情報（ドメインコード、ページタイトル、ビュー数）を提示する
+（例）CLI上で「2」と指定した場合、下記を表示
+      ”en”, “Main_Page”, 120
+      ”en”, ”Wikipedia:Umnyango_wamgwamanda”, 112
 
-* 指定したドメインコードに対して、人気順にソートし、ドメインコード名と合計ビュー数を提示する
-（例）コマンドライン上で「en de」と指定した場合、下記を表示する
-”en”, 10700
-”de”, 5300
+* 指定したドメインコードに対して、合計ビュー数順に、ドメインコード名と合計ビュー数を提示する
+（例）CLI上で「en de」と指定した場合、下記を表示する
+      ”en”, 10700
+      ”de”, 5300
 
 ## 非機能要件
 
@@ -47,44 +48,34 @@ docker-compose build
 # Docker コンテナの起動
 docker-compose up -d
 
-# Docker コンテナ内でコマンドを実行する
-docker-compose exec app php -v
-
 # Docker コンテナの停止・削除
 docker-compose down
 ```
 
-## Docker でよく使うコマンド
+## 使用方法
 
+1. Dockerでの環境構築
 ```bash
-# コンテナの一覧と起動状態を確認する
-docker-compose ps
-
-# ログを確認する
-docker-compose logs app
-
-# コンテナ内で bash を操作する（コンテナ起動中のみ）
-docker-compose exec app /bin/bash
+docker-compose build
+docker-compose up -d
 ```
 
-## CLIでデータベース・テーブル作成
-
+2. Wikiログ解析ツールのプログラムを実行
 ```bash
-# rootユーザでログイン
-docker compose exec db mysql -u root -p
+docker compose exec app php logAnalyzer.php
+```
+※ 初回はデータベース及びテーブルの初期設定を行います。
+　 その為、操作できるまで多少時間がかかります。
+※ 解析用データ(Wikipediaのログデータ)はsrc/logsに「rowData.txt」ファイルとして格納しています。
 
-# データベースを作成
-CREATE DATABASE log_analyzer_db;
+3. CLI上で選択コマンドが表示される(下記から選択)
+  * 1：最もビュー数の多いページ情報を表示する
+  * 2：ドメインコードごとの合計ビュー数を表示する
+  * 9：ツールを終了する
 
-# デフォルトで使用するデータベースの設定
-SET log_analyzer_db;
+4. CLI上の指示に従い、操作する
 
-# テーブル作成
-CREATE TABLE logs (
-  id INTEGER PRIMARY KEY AUTO_INCREMENT,
-  domain_code VARCHAR(10) NOT NULL,
-  page_title VARCHAR(255) NOT NULL,
-  count_views INTEGER NOT NULL,
-  total_response_size INTEGER NOT NULL
-);
+5. 最後にDocker コンテナの停止・削除
+```bash
+docker-compose down
 ```

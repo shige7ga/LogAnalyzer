@@ -12,7 +12,7 @@ function firstOutput()
 
 function outputMostViewedPage(): void
 {
-    echo '何件表示しますか(数値で入力してください)：';
+    echo '何件表示しますか(1以上の整数で入力してください)：';
     $count = (int)trim(fgets(STDIN));
     $pdo = connectPdo();
 
